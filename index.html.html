@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14110f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gear Check">
+<title>Studio Gear Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: one centered column (max 560px), sticky progress header, one card per gear group. */
+:root{
+  --bg:#f4f1ec; --card:#ffffff; --ink:#1b1714; --muted:#7a7068; --line:#e6e0d8;
+  --accent:#e8541e; --accent-soft:#fde6dc; --ok:#1f9d61; --ok-soft:#dff4e8;
+  --font-display:"Bebas Neue",Impact,"Arial Narrow",sans-serif;
+  --font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#14110f; --card:#201c19; --ink:#f3ede6; --muted:#a0958b; --line:#332d28;
+    --accent:#ff7a45; --accent-soft:#3a2118; --ok:#3ecf8e; --ok-soft:#16352a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14110f; --card:#201c19; --ink:#f3ede6; --muted:#a0958b; --line:#332d28;
+  --accent:#ff7a45; --accent-soft:#3a2118; --ok:#3ecf8e; --ok-soft:#16352a; color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.4;
+  padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(14px + env(safe-area-inset-top)) 0 12px;border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;gap:14px}
+.ring{position:relative;width:64px;height:64px;flex:none}
+.ring svg{width:64px;height:64px;transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-size:22px;letter-spacing:.5px}
+.ttl{flex:1;min-width:0}
+h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:32px;letter-spacing:1px;line-height:1}
+.sub{color:var(--muted);font-size:13px;margin-top:3px}
+.sub b{color:var(--ink)}
+.bar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 13px var(--font-body);
+  padding:8px 14px;border-radius:999px;cursor:pointer;min-height:38px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip.ghost{margin-left:auto}
+.chip:focus-visible,.row:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main{display:flex;flex-direction:column;gap:16px;padding-top:16px}
+.group{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.ghead{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--accent-soft)}
+.group.complete .ghead{background:var(--ok-soft)}
+.gicon{width:56px;height:56px;border-radius:16px;background:var(--card);display:grid;place-items:center;color:var(--accent);flex:none;
+  box-shadow:0 1px 0 var(--line)}
+.group.complete .gicon{color:var(--ok)}
+.gicon svg{width:36px;height:36px}
+.gname{flex:1;min-width:0}
+.gname h2{margin:0;font-family:var(--font-display);font-weight:400;font-size:26px;letter-spacing:1px;line-height:1}
+.gname span{font-size:13px;color:var(--muted)}
+.badge{font:800 13px var(--font-body);padding:6px 10px;border-radius:999px;background:var(--card);color:var(--ink);font-variant-numeric:tabular-nums}
+.group.complete .badge{background:var(--ok);color:#fff}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:stretch;border-top:1px solid var(--line)}
+.row{flex:1;display:flex;align-items:center;gap:14px;padding:14px 16px;min-height:56px;background:none;border:0;color:inherit;
+  font:600 16px var(--font-body);text-align:left;cursor:pointer}
+.box{width:28px;height:28px;border-radius:9px;border:2px solid var(--muted);flex:none;display:grid;place-items:center;transition:.15s}
+.box svg{width:18px;height:18px;opacity:0;stroke:#fff}
+.row[aria-checked="true"] .box{background:var(--ok);border-color:var(--ok)}
+.row[aria-checked="true"] .box svg{opacity:1}
+.row[aria-checked="true"] .lbl{color:var(--muted);text-decoration:line-through}
+.del{width:56px;border:0;border-left:1px solid var(--line);background:none;color:#d23b3b;font:800 22px var(--font-body);cursor:pointer}
+.add{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+.add input{flex:1;min-width:0;font:400 16px var(--font-body);padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.add button{font:800 14px var(--font-body);border:0;border-radius:12px;padding:0 16px;background:var(--accent);color:#fff;cursor:pointer;min-height:44px}
+.hide{display:none!important}
+.done{display:none;text-align:center;padding:22px 16px;border-radius:20px;background:var(--ok);color:#fff}
+.done h3{margin:0;font-family:var(--font-display);font-weight:400;font-size:30px;letter-spacing:1px}
+.done.show{display:block}
+.tip{font-size:12px;color:var(--muted);text-align:center;padding:8px 8px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div class="ring" aria-hidden="true">
+        <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="var(--line)" stroke-width="7"/>
+        <circle id="arc" cx="32" cy="32" r="27" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="169.6"/></svg>
+        <div class="num" id="pct">0%</div>
+      </div>
+      <div class="ttl">
+        <h1>Studio Gear Check</h1>
+        <div class="sub"><b id="cnt">0 / 0</b> packed &middot; <span id="left"></span></div>
+      </div>
+    </div>
+    <div class="bar">
+      <button class="chip" id="fAll" aria-pressed="true">All</button>
+      <button class="chip" id="fLeft" aria-pressed="false">Remaining</button>
+      <button class="chip" id="fEdit" aria-pressed="false">Edit</button>
+      <button class="chip ghost" id="reset">Reset all</button>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <main id="app"></main>
+  <div class="done" id="done"><h3>Everything packed</h3><div>Ready to leave the studio.</div></div>
+  <p class="tip">Tap an item to tick it. Use Edit to add or remove gear.</p>
+</div>
+
+<script>
+// Line icons, one per gear group. Drawn with currentColor so they follow the theme.
+var ICONS={
+camera:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17a3 3 0 0 1 3-3h5l2.5-4h15L34 14h5a3 3 0 0 1 3 3v19a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3z"/><circle cx="24" cy="25.5" r="8"/><circle cx="24" cy="25.5" r="3.2"/><circle cx="37" cy="19" r="1" fill="currentColor"/></svg>',
+lens:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14h24l3 6v8l-3 6H12l-3-6v-8z"/><path d="M16 14v20M32 14v20M9 24h30"/><circle cx="24" cy="24" r="4"/></svg>',
+i360:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="5" width="16" height="30" rx="8"/><circle cx="24" cy="15" r="4.5"/><circle cx="24" cy="27" r="4.5"/><path d="M24 35v7M17 42h14"/><path d="M8 20a16 6 0 0 0 0 0" /><path d="M7 18c-3 2-3 7 0 9M41 18c3 2 3 7 0 9"/></svg>',
+flash:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8h26l6 6v8H8z"/><path d="M14 22v10h16V22"/><path d="M18 32v8h8v-8"/><path d="M36 28l-4 7h5l-4 7"/></svg>',
+sd:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6h16l8 8v26a2 2 0 0 1-2 2H13a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M17 12v7M22 12v7M27 12v7"/><path d="M17 30h14M17 36h8"/></svg>',
+mic:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="17" y="5" width="14" height="23" rx="7"/><path d="M17 14h14M17 19h14"/><path d="M10 24a14 14 0 0 0 28 0"/><path d="M24 38v6M17 44h14"/></svg>',
+light:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="6" width="32" height="20" rx="3"/><path d="M14 12h20M14 16h20M14 20h20"/><path d="M24 26v10M24 36l-9 8M24 36l9 8M24 36v8"/></svg>',
+bag:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14v-3a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v3"/><rect x="7" y="14" width="34" height="26" rx="6"/><path d="M7 25h34"/><rect x="21" y="22" width="6" height="7" rx="1.5"/><circle cx="24" cy="34" r="0.6" fill="currentColor"/></svg>'
+};
+var CHECK='<svg viewBox="0 0 24 24" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+var KEY='studioGearCheck.v1';
+var DEFAULT=[
+ {n:'Camera',i:'camera',items:['Camera body','Spare batteries','Battery charger','Camera strap','Body cap']},
+ {n:'Lenses',i:'lens',items:['Main lens','Wide lens','Lens cloth','Lens caps','Lens hood']},
+ {n:'Insta360',i:'i360',items:['Insta360 camera','Spare battery','Selfie stick','Lens guard','Charging cable']},
+ {n:'Flash',i:'flash',items:['Flash unit','Flash batteries','Wireless trigger','Diffuser']},
+ {n:'SD Cards',i:'sd',items:['SD card 1','SD card 2','SD card 3','Card reader','Card case']},
+ {n:'Mic',i:'mic',items:['Wireless mic','Receiver','Mic batteries','Windshield','Audio cable']},
+ {n:'Lights',i:'light',items:['LED light','Light stand','Power adapter','Softbox']},
+ {n:'Drone Bag 1',i:'bag',items:['Drone','Controller','Batteries','Propellers','Charger']},
+ {n:'Drone Bag 2',i:'bag',items:['Drone','Controller','Batteries','Propellers','Charger']},
+ {n:'Drone Bag 3',i:'bag',items:['Drone','Controller','Batteries','Propellers','Charger']}
+];
+var uid=0;
+function build(){return DEFAULT.map(function(g,gi){return{id:'g'+gi,n:g.n,i:g.i,items:g.items.map(function(t){return{id:'i'+(uid++),t:t,d:false}})}})}
+var S;
+try{var raw=localStorage.getItem(KEY);S=raw?JSON.parse(raw):null}catch(e){S=null}
+if(!S||!S.length){S=build()}
+S.forEach(function(g){g.items.forEach(function(it){var n=parseInt(String(it.id).replace(/\D/g,''),10);if(n>=uid)uid=n+1})});
+var filter='all',edit=false;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+function render(){
+  var app=document.getElementById('app'),tot=0,dn=0,html='';
+  S.forEach(function(g){
+    var d=g.items.filter(function(x){return x.d}).length,t=g.items.length;
+    tot+=t;dn+=d;
+    var complete=t>0&&d===t;
+    var hide=(filter==='left'&&complete)?' hide':'';
+    html+='<section class="group'+(complete?' complete':'')+hide+'" data-g="'+g.id+'">'+
+      '<div class="ghead"><div class="gicon">'+ICONS[g.i]+'</div>'+
+      '<div class="gname"><h2>'+esc(g.n)+'</h2><span>'+(complete?'All packed':(t-d)+' left to pack')+'</span></div>'+
+      '<div class="badge">'+d+'/'+t+'</div></div><ul>';
+    g.items.forEach(function(it){
+      var h=(filter==='left'&&it.d)?' hide':'';
+      html+='<li class="'+h+'"><button class="row" role="checkbox" aria-checked="'+it.d+'" data-g="'+g.id+'" data-i="'+it.id+'">'+
+        '<span class="box">'+CHECK+'</span><span class="lbl">'+esc(it.t)+'</span></button>'+
+        (edit?'<button class="del" aria-label="Remove '+esc(it.t)+'" data-g="'+g.id+'" data-del="'+it.id+'">&times;</button>':'')+'</li>';
+    });
+    html+='</ul>'+(edit?'<form class="add" data-g="'+g.id+'"><input type="text" id="in-'+g.id+'" placeholder="Add item to '+esc(g.n)+'" aria-label="New item for '+esc(g.n)+'"><button type="submit">Add</button></form>':'')+'</section>';
+  });
+  app.innerHTML=html;
+  var p=tot?Math.round(dn/tot*100):0;
+  document.getElementById('pct').textContent=p+'%';
+  document.getElementById('cnt').textContent=dn+' / '+tot;
+  document.getElementById('left').textContent=(tot-dn)+' to go';
+  document.getElementById('arc').style.strokeDashoffset=169.6*(1-p/100);
+  document.getElementById('arc').style.stroke=(tot&&dn===tot)?'var(--ok)':'var(--accent)';
+  document.getElementById('done').classList.toggle('show',tot>0&&dn===tot);
+}
+function find(id){return S.filter(function(g){return g.id===id})[0]}
+document.getElementById('app').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  var g=find(b.dataset.g);if(!g)return;
+  if(b.dataset.i){var it=g.items.filter(function(x){return x.id===b.dataset.i})[0];it.d=!it.d;save();render()}
+  else if(b.dataset.del){g.items=g.items.filter(function(x){return x.id!==b.dataset.del});save();render()}
+});
+document.getElementById('app').addEventListener('submit',function(e){
+  e.preventDefault();var f=e.target,g=find(f.dataset.g),inp=f.querySelector('input'),v=inp.value.trim();
+  if(!v)return;g.items.push({id:'i'+(uid++),t:v,d:false});save();render();
+  var n=document.getElementById('in-'+g.id);if(n)n.focus();
+});
+function setF(f){filter=f;document.getElementById('fAll').setAttribute('aria-pressed',f==='all');document.getElementById('fLeft').setAttribute('aria-pressed',f==='left');render()}
+document.getElementById('fAll').onclick=function(){setF('all')};
+document.getElementById('fLeft').onclick=function(){setF('left')};
+document.getElementById('fEdit').onclick=function(){edit=!edit;this.setAttribute('aria-pressed',edit);render()};
+var rs=document.getElementById('reset'),armed=false,tm;
+rs.onclick=function(){
+  if(!armed){armed=true;rs.textContent='Tap again to untick all';tm=setTimeout(function(){armed=false;rs.textContent='Reset all'},3000);return}
+  clearTimeout(tm);armed=false;rs.textContent='Reset all';
+  S.forEach(function(g){g.items.forEach(function(it){it.d=false})});save();render();
+};
+render();
+</script>
+</body>
+</html>
